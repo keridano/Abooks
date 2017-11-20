@@ -12,5 +12,6 @@ import retrofit2.http.Query;
 public interface GoogleBooksAPI {
 
     @GET("/books/v1/volumes")
-    Call<BookQueryResult> bookSearch(@Query("q") String query);
+    Call<BookQueryResult> bookSearch(@Query("q") String query, @Query("key") String apiKey);
+
 }
