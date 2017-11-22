@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.keridano.abooks.api.GoogleBooksAPI;
+import com.keridano.abooks.fragment.BooksListFragment;
 import com.keridano.abooks.model.BookQueryResult;
 
 import java.lang.reflect.Type;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView            sampleText;
     private GoogleBooksAPI      googleBooksAPI;
+    private BooksListFragment   booksListFragment;
 
     //region Overridden Methods
     @Override
@@ -55,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
         setupView();
         initApi();
         searchBooks("harry potter");
+
+        booksListFragment = BooksListFragment.newInstance(1);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, booksListFragment).commit();
 
     }
 

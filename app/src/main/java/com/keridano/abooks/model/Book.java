@@ -4,7 +4,7 @@ package com.keridano.abooks.model;
  * Created by kerid on 20/11/2017.
  */
 
-class Book {
+public class Book {
 
     private String      kind;
     private String      id;
