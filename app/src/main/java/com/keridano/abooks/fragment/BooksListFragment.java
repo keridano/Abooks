@@ -10,9 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.keridano.abooks.MainActivity;
 import com.keridano.abooks.R;
-import com.keridano.abooks.fragment.dummy.DummyContent;
-import com.keridano.abooks.fragment.dummy.DummyContent.DummyItem;
+import com.keridano.abooks.adapter.BooksRecyclerViewAdapter;
+import com.keridano.abooks.adapter.EndlessRecyclerViewScrollListener;
 import com.keridano.abooks.model.Book;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class BooksListFragment extends Fragment {
     private List<Book>                          mBooks          = new ArrayList<>();
     private int                                 mColumnCount    = 1;
     private OnListFragmentInteractionListener   mListener;
+    private EndlessRecyclerViewScrollListener   mEndlessListener;
     private BooksRecyclerViewAdapter            mAdapter;
 
     public BooksListFragment() {}
@@ -64,16 +66,35 @@ public class BooksListFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
 
-            Context         context         = view.getContext();
-            RecyclerView    recyclerView    = (RecyclerView) view;
+            Context             context         = view.getContext();
+            RecyclerView        recyclerView    = (RecyclerView) view;
+            LinearLayoutManager llManager       = null;
+            GridLayoutManager   glManager       = null;
 
-            if (mColumnCount <= 1)
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            else
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            if (mColumnCount <= 1) {
+
+                llManager = new LinearLayoutManager(context);
+                recyclerView.setLayoutManager(llManager);
+
+            } else {
+
+                glManager = new GridLayoutManager(context, mColumnCount);
+                recyclerView.setLayoutManager(glManager);
+
+            }
+
+            mEndlessListener = new EndlessRecyclerViewScrollListener(llManager != null ? llManager : glManager) {
+
+                @Override
+                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                    ((MainActivity)getActivity()).booksSearchPagination(totalItemsCount);
+                }
+
+            };
 
             mAdapter = new BooksRecyclerViewAdapter(getActivity(), mBooks, mListener);
             recyclerView.setAdapter(mAdapter);
+            recyclerView.addOnScrollListener(mEndlessListener);
 
         }
 
@@ -105,9 +126,15 @@ public class BooksListFragment extends Fragment {
         void onListFragmentInteraction(Book item);
     }
 
-    public void updateBooksList(List<Book> books) {
+    public void updateBooksList(List<Book> books, boolean isAppend) {
 
-        mBooks.clear();
+        if(!isAppend) {
+
+            mBooks.clear();
+            mEndlessListener.resetState();
+
+        }
+
         mBooks.addAll(books);
         mAdapter.notifyDataSetChanged();
 

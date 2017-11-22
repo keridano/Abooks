@@ -1,7 +1,8 @@
-package com.keridano.abooks.fragment;
+package com.keridano.abooks.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,6 @@ import android.widget.TextView;
 
 import com.keridano.abooks.R;
 import com.keridano.abooks.fragment.BooksListFragment.OnListFragmentInteractionListener;
-import com.keridano.abooks.fragment.dummy.DummyContent.DummyItem;
 import com.keridano.abooks.model.Book;
 import com.squareup.picasso.Picasso;
 
@@ -46,11 +46,20 @@ public class BooksRecyclerViewAdapter extends RecyclerView.Adapter<BooksRecycler
     public void onBindViewHolder(final ViewHolder holder, int position) {
 
         holder.mItem = mBooks.get(position);
-        holder.mBookTitle.setText(holder.mItem.getVolumeInfo().getTitle());
-        Picasso.with(mContext)
-                .load(holder.mItem.getVolumeInfo().getImageLinks().getSmallThumbnail())
-                .placeholder(R.drawable.book_placeholder)
-                .into(holder.mBookCover);
+        if(holder.mItem.getVolumeInfo() != null) {
+
+            holder.mBookTitle.setText(holder.mItem.getVolumeInfo().getTitle());
+            if(holder.mItem.getVolumeInfo().getImageLinks() != null) {
+
+                Picasso.with(mContext)
+                        .load(holder.mItem.getVolumeInfo().getImageLinks().getThumbnail())
+                        .placeholder(R.mipmap.ic_launcher)
+                        .into(holder.mBookCover);
+
+            } else
+                holder.mBookCover.setImageResource(R.drawable.book_placeholder);
+
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override

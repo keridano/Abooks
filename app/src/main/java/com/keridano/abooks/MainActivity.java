@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -33,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     private final static String TAG    = MainActivity.class.getSimpleName();
 
-    private TextView            sampleText;
     private GoogleBooksAPI      googleBooksAPI;
     private BooksListFragment   booksListFragment;
+    private String              lastQueryString = "harry Potter";
 
     //region Overridden Methods
     @Override
@@ -58,18 +60,42 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
         setupView();
         initApi();
-        searchBooks("harry potter");
+        searchBooks(lastQueryString);
 
-        booksListFragment = BooksListFragment.newInstance(1);
+        booksListFragment = BooksListFragment.newInstance(2);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, booksListFragment).commit();
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        final MenuItem searchMenuItem   = menu.findItem(R.id.action_search);
+        final SearchView searchView     = (SearchView) searchMenuItem.getActionView();
+        searchView.setOnQueryTextListener(new android.support.v7.widget.SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                searchBooks(query);
+                searchView.clearFocus();
+                searchMenuItem.collapseActionView();
+                searchView.setIconified(true);
+
+                return true;
+
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+        });
+
         return true;
+
     }
 
     @Override
@@ -108,16 +134,41 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     }
 
-    private void searchBooks(String queryString) {
+    public void searchBooks(final String queryString) {
 
         googleBooksAPI.bookSearch(queryString, getString(R.string.apiKey)).enqueue(new Callback<BookQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
                 if(response.body() != null) {
-                    booksListFragment.updateBooksList(response.body().getItems());
+
+                    booksListFragment.updateBooksList(response.body().getItems(), false);
+                    lastQueryString = queryString;
+
                 }
 
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BookQueryResult> call, @NonNull Throwable t) {
+                Log.e(TAG, t.getMessage(), t);
+            }
+
+        });
+
+    }
+
+    public void booksSearchPagination(int page) {
+
+        String startIndex = page > 0 ? Integer.valueOf((page*10)-1).toString() : "0";
+
+        googleBooksAPI.bookSearch(lastQueryString, getString(R.string.apiKey), startIndex).enqueue(new Callback<BookQueryResult>() {
+            @Override
+            public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
+
+                if(response.body() != null) {
+                    booksListFragment.updateBooksList(response.body().getItems(), true);
+                }
 
             }
 

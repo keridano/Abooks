@@ -14,4 +14,7 @@ public interface GoogleBooksAPI {
     @GET("/books/v1/volumes")
     Call<BookQueryResult> bookSearch(@Query("q") String query, @Query("key") String apiKey);
 
+    @GET("/books/v1/volumes")
+    Call<BookQueryResult> bookSearch(@Query("q") String query, @Query("key") String apiKey, @Query("startIndex") String startIndex);
+
 }
