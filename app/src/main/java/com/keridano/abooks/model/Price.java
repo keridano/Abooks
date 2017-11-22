@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class Price {
+public class Price {
 
     private double  amount;
     private long    amountInMicros;

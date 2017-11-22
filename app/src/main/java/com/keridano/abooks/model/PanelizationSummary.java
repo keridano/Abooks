@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class PanelizationSummary {
+public class PanelizationSummary {
 
     private boolean containsEpubBubbles;
     private boolean containsImageBubbles;

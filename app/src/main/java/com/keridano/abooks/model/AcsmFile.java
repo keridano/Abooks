@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class AcsmFile {
+public class AcsmFile {
 
     private boolean isAvailable;
     private String acsTokenLink;

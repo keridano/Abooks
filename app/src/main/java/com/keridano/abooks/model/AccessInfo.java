@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class AccessInfo {
+public class AccessInfo {
 
     private String      country;
     private String      viewability;

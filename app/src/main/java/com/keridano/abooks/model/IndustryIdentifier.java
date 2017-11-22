@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class IndustryIdentifier {
+public class IndustryIdentifier {
 
     private String type;
     private String identifier;

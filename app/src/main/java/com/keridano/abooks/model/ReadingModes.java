@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class ReadingModes {
+public class ReadingModes {
 
     private boolean text;
     private boolean image;

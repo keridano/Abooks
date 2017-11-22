@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author enrico.sallusti
  */
-class SaleInfo {
+public class SaleInfo {
 
     private String      country;
     private String      saleability;

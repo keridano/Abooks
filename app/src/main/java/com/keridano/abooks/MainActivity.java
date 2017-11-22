@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.keridano.abooks.api.GoogleBooksAPI;
 import com.keridano.abooks.fragment.BooksListFragment;
+import com.keridano.abooks.model.Book;
 import com.keridano.abooks.model.BookQueryResult;
 
 import java.lang.reflect.Type;
@@ -27,7 +29,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BooksListFragment.OnListFragmentInteractionListener {
 
     private final static String TAG    = MainActivity.class.getSimpleName();
 
@@ -87,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     //region Private Methods
     private void setupView(){
-        this.sampleText = findViewById(R.id.sampleText);
+//        this.sampleText = findViewById(R.id.sampleText);
     }
 
     private void initApi() {
@@ -112,8 +114,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
-                Gson gson = new Gson();
-                sampleText.setText(gson.toJson(response.body(), BookQueryResult.class));
+                if(response.body() != null) {
+                    booksListFragment.updateBooksList(response.body().getItems());
+                }
+
 
             }
 
@@ -124,6 +128,11 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+    }
+
+    @Override
+    public void onListFragmentInteraction(Book item) {
+        // TODO: 22/11/2017
     }
     //endregion
 

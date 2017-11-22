@@ -3,8 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-
-class Offer {
+public class Offer {
 
     private int     finskyOfferType;
     private Price   listPrice;

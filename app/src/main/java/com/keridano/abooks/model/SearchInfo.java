@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class SearchInfo {
+public class SearchInfo {
 
     private String textSnippet;
 

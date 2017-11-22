@@ -3,7 +3,7 @@ package com.keridano.abooks.model;
 /**
  * @author enrico.sallusti
  */
-class ImageLinks {
+public class ImageLinks {
 
     private String smallThumbnail;
     private String thumbnail;

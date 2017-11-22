@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author enrico.sallusti
  */
-class VolumeInfo {
+public class VolumeInfo {
 
     private String                      title;
     private List<String>                authors;

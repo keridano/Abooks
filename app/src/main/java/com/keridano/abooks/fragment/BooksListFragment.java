@@ -19,19 +19,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A fragment representing a list of Items.
+ * A fragment representing a list of Books.
  * <p/>
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
 public class BooksListFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
 
-    private List<Book>                          books           = new ArrayList<>();
+    private List<Book>                          mBooks          = new ArrayList<>();
     private int                                 mColumnCount    = 1;
     private OnListFragmentInteractionListener   mListener;
+    private BooksRecyclerViewAdapter            mAdapter;
 
     public BooksListFragment() {}
 
@@ -72,7 +72,8 @@ public class BooksListFragment extends Fragment {
             else
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
 
-            recyclerView.setAdapter(new BooksRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            mAdapter = new BooksRecyclerViewAdapter(getActivity(), mBooks, mListener);
+            recyclerView.setAdapter(mAdapter);
 
         }
 
@@ -102,6 +103,14 @@ public class BooksListFragment extends Fragment {
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(Book item);
+    }
+
+    public void updateBooksList(List<Book> books) {
+
+        mBooks.clear();
+        mBooks.addAll(books);
+        mAdapter.notifyDataSetChanged();
+
     }
 
 }
