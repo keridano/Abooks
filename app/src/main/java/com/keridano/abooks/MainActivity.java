@@ -1,14 +1,13 @@
 package com.keridano.abooks;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,11 +15,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
-import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.gson.Gson;
 import com.keridano.abooks.api.GoogleBooksAPI;
 import com.keridano.abooks.constant.AppConstants;
@@ -28,7 +25,6 @@ import com.keridano.abooks.fragment.BooksListFragment;
 import com.keridano.abooks.model.Book;
 import com.keridano.abooks.model.BookQueryResult;
 
-import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -111,49 +107,19 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onListFragmentInteraction(Book item) {
+
+        Gson    gson                    = new Gson();
+        Intent  detailActivityIntent    = new Intent(this, DetailActivity.class);
+        detailActivityIntent.putExtra(AppConstants.BOOK_DETAIL, gson.toJson(item, Book.class));
+        startActivity(detailActivityIntent);
+
+    }
     //endregion
 
-    //region Private Methods
-    private void setupView() {
-
-        setContentView(R.layout.activity_main);
-
-        this.mToolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(this.mToolbar);
-
-        this.mFab = findViewById(R.id.fab);
-        this.mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-        this.mProgress = findViewById(R.id.progress);
-
-    }
-
-    private void initApi() {
-
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(5, TimeUnit.SECONDS)
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .addInterceptor(interceptor)
-                .build();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://www.googleapis.com")
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        googleBooksAPI = retrofit.create(GoogleBooksAPI.class);
-
-    }
-
+    //region Public Methods
     public void searchBooks(final String queryString) {
 
         mProgress.setVisibility(View.VISIBLE);
@@ -259,10 +225,47 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
         }
 
     }
+    //endregion
 
-    @Override
-    public void onListFragmentInteraction(Book item) {
-        // TODO: 22/11/2017
+    //region Private Methods
+    private void setupView() {
+
+        setContentView(R.layout.activity_main);
+
+        this.mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(this.mToolbar);
+
+        this.mFab = findViewById(R.id.fab);
+        this.mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+        this.mProgress = findViewById(R.id.progress);
+
+    }
+
+    private void initApi() {
+
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(5, TimeUnit.SECONDS)
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .addInterceptor(interceptor)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.googleapis.com")
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        googleBooksAPI = retrofit.create(GoogleBooksAPI.class);
+
     }
     //endregion
 

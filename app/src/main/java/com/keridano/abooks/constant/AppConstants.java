@@ -6,5 +6,7 @@ package com.keridano.abooks.constant;
 
 public class AppConstants {
 
-    public final static String IS_FIRST_START = "isFirstStart";
+    public final static String IS_FIRST_START   = "isFirstStart";
+    public static final String BOOK_DETAIL      = "bookDetail";
+
 }
