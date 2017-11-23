@@ -135,8 +135,11 @@ public class BooksListFragment extends Fragment {
 
         }
 
-        mBooks.addAll(books);
+        if(books != null)
+            mBooks.addAll(books);
+
         mAdapter.notifyDataSetChanged();
+        mEndlessListener.setLoaded();
 
     }
 

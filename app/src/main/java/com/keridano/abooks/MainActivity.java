@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -22,6 +23,7 @@ import com.keridano.abooks.model.Book;
 import com.keridano.abooks.model.BookQueryResult;
 
 import java.lang.reflect.Type;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     private GoogleBooksAPI      googleBooksAPI;
     private BooksListFragment   booksListFragment;
+    private ProgressBar         mProgress;
     private String              lastQueryString = "harry Potter";
 
     //region Overridden Methods
@@ -115,14 +118,18 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     //region Private Methods
     private void setupView(){
-//        this.sampleText = findViewById(R.id.sampleText);
+        this.mProgress = findViewById(R.id.progress);
     }
 
     private void initApi() {
 
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(5, TimeUnit.SECONDS)
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .addInterceptor(interceptor)
+                .build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.googleapis.com")
@@ -136,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     public void searchBooks(final String queryString) {
 
+        mProgress.setVisibility(View.VISIBLE);
+
         googleBooksAPI.bookSearch(queryString, getString(R.string.apiKey)).enqueue(new Callback<BookQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
@@ -146,12 +155,16 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                     lastQueryString = queryString;
 
                 }
+                mProgress.setVisibility(View.GONE);
 
             }
 
             @Override
             public void onFailure(@NonNull Call<BookQueryResult> call, @NonNull Throwable t) {
+
+                mProgress.setVisibility(View.GONE);
                 Log.e(TAG, t.getMessage(), t);
+
             }
 
         });
@@ -174,7 +187,10 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
             @Override
             public void onFailure(@NonNull Call<BookQueryResult> call, @NonNull Throwable t) {
+
                 Log.e(TAG, t.getMessage(), t);
+                booksListFragment.updateBooksList(null, true);
+
             }
 
         });
