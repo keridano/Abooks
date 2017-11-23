@@ -1,6 +1,8 @@
 package com.keridano.abooks;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,8 +18,12 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.gson.Gson;
 import com.keridano.abooks.api.GoogleBooksAPI;
+import com.keridano.abooks.constant.AppConstants;
 import com.keridano.abooks.fragment.BooksListFragment;
 import com.keridano.abooks.model.Book;
 import com.keridano.abooks.model.BookQueryResult;
@@ -37,37 +43,28 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
     private final static String TAG    = MainActivity.class.getSimpleName();
 
-    private GoogleBooksAPI      googleBooksAPI;
-    private BooksListFragment   booksListFragment;
-    private ProgressBar         mProgress;
-    private String              lastQueryString = "harry Potter";
+    private GoogleBooksAPI          googleBooksAPI;
+    private BooksListFragment       booksListFragment;
+    private SharedPreferences       mPreferences;
+    private ProgressBar             mProgress;
+    private Toolbar                 mToolbar;
+    private FloatingActionButton    mFab;
+    private String                  lastQueryString = "harry Potter";
 
     //region Overridden Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         setupView();
         initApi();
         searchBooks(lastQueryString);
 
-        booksListFragment = BooksListFragment.newInstance(2);
+        this.booksListFragment = BooksListFragment.newInstance(2);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, booksListFragment).commit();
 
+        this.mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -117,8 +114,24 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
     //endregion
 
     //region Private Methods
-    private void setupView(){
+    private void setupView() {
+
+        setContentView(R.layout.activity_main);
+
+        this.mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(this.mToolbar);
+
+        this.mFab = findViewById(R.id.fab);
+        this.mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
         this.mProgress = findViewById(R.id.progress);
+
     }
 
     private void initApi() {
@@ -149,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
+                showTutorial();
                 if(response.body() != null) {
 
                     booksListFragment.updateBooksList(response.body().getItems(), false);
@@ -162,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
             @Override
             public void onFailure(@NonNull Call<BookQueryResult> call, @NonNull Throwable t) {
 
+                showTutorial();
                 mProgress.setVisibility(View.GONE);
                 Log.e(TAG, t.getMessage(), t);
 
@@ -194,6 +209,54 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
             }
 
         });
+
+    }
+
+    public void showTutorial(){
+
+        boolean isFirstStart = this.mPreferences.getBoolean(AppConstants.IS_FIRST_START, true);
+        if(isFirstStart && this.booksListFragment.getView() != null) {
+
+            new TapTargetSequence(this).targets(
+                    TapTarget.forToolbarMenuItem(this.mToolbar, R.id.action_search, "Search your favourite books", "Tap on the search button to search for books title, auhors, publisher and much more")
+                            .drawShadow(true)
+                            .tintTarget(true)
+                            .cancelable(false)
+                            .icon(getDrawable(R.drawable.ic_search)),
+                    TapTarget.forView(this.mFab, "This is the barcode scanner", "tap on it to scan an ISBN code and search for a book")
+                            .drawShadow(true)
+                            .tintTarget(true)
+                            .cancelable(false)
+                            .icon(getDrawable(R.drawable.ic_barcode_scan)),
+                    TapTarget.forView(this.booksListFragment.getView(), "This is the book shelf", "Tap on a book to get the details")
+                            .drawShadow(true)
+                            .tintTarget(true)
+                            .cancelable(false)
+                            .icon(getDrawable(R.drawable.ic_book))
+            ).listener(new TapTargetSequence.Listener() {
+                           @Override
+                           public void onSequenceFinish() {
+
+                               SharedPreferences.Editor editor = mPreferences.edit();
+                               editor.putBoolean(AppConstants.IS_FIRST_START, false);
+                               editor.apply();
+
+                           }
+
+                           @Override
+                           public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                           }
+
+                           @Override
+                           public void onSequenceCanceled(TapTarget lastTarget) {
+
+                           }
+                       }
+
+            ).start();
+
+        }
 
     }
 
