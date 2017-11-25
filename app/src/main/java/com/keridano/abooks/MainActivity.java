@@ -1,12 +1,18 @@
 package com.keridano.abooks;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +24,8 @@ import android.widget.ProgressBar;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.vision.barcode.Barcode;
 import com.google.gson.Gson;
 import com.keridano.abooks.api.GoogleBooksAPI;
 import com.keridano.abooks.constant.AppConstants;
@@ -27,6 +35,7 @@ import com.keridano.abooks.model.BookQueryResult;
 
 import java.util.concurrent.TimeUnit;
 
+import barcodereader.BarcodeCaptureActivity;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -37,11 +46,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements BooksListFragment.OnListFragmentInteractionListener {
 
-    private final static String TAG    = MainActivity.class.getSimpleName();
+    private final static String TAG                     = MainActivity.class.getSimpleName();
+    private static final int    RC_BARCODE_CAPTURE      = 9001;
+    public 	static final int    CAMERA_REQUEST_CODE     = 0x101;
 
     private GoogleBooksAPI          googleBooksAPI;
     private BooksListFragment       booksListFragment;
     private SharedPreferences       mPreferences;
+    private AlertDialog 	        mDialog;
     private ProgressBar             mProgress;
     private Toolbar                 mToolbar;
     private FloatingActionButton    mFab;
@@ -115,6 +127,38 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
         Intent  detailActivityIntent    = new Intent(this, DetailActivity.class);
         detailActivityIntent.putExtra(AppConstants.BOOK_DETAIL, gson.toJson(item, Book.class));
         startActivity(detailActivityIntent);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            startBarcodeActivity(this);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == RC_BARCODE_CAPTURE) {
+
+            if (resultCode == CommonStatusCodes.SUCCESS && data != null) {
+
+                Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+                if (barcode.displayValue.matches(AppConstants.ISBN_REGEX)) {
+
+                    String code = barcode.displayValue;
+                    searchBooks("+isbn:"+code);
+
+                }
+
+            }
+
+        } else
+            super.onActivityResult(requestCode, resultCode, data);
 
     }
     //endregion
@@ -239,8 +283,14 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
         this.mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+                    showPermissionDialog(CAMERA_REQUEST_CODE);
+                else
+                    startBarcodeActivity(MainActivity.this);
+
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
             }
         });
 
@@ -265,6 +315,35 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                 .build();
 
         googleBooksAPI = retrofit.create(GoogleBooksAPI.class);
+
+    }
+
+    private void showPermissionDialog(final int requestCode) {
+
+        if (this.mDialog != null)
+            this.mDialog.dismiss();
+
+        this.mDialog = new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog_Alert)
+                .setTitle(getString(android.R.string.dialog_alert_title))
+                .setMessage(getString(R.string.permission_camera_rationale))
+                .setCancelable(false)
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, requestCode);
+                        dialogInterface.dismiss();
+
+                    }
+                }).show();
+
+    }
+
+    private void startBarcodeActivity(Context context) {
+
+        Intent intent = new Intent(context, BarcodeCaptureActivity.class);
+        startActivityForResult(intent, RC_BARCODE_CAPTURE);
 
     }
     //endregion
