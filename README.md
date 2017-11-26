@@ -20,7 +20,7 @@ Simply clone the repository in your computer and run it using Android studio.
 
 ## Author
 
-* **Enrico Sallusti**
+* **Enrico Sallusti** - [Linkedin](http://www.linkedin.com/in/enrico-sallusti)
 
 ## License
 
