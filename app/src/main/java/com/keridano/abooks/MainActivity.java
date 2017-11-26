@@ -46,10 +46,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements BooksListFragment.OnListFragmentInteractionListener {
 
-    private final static String TAG                     = MainActivity.class.getSimpleName();
-    private static final int    RC_BARCODE_CAPTURE      = 9001;
-    public 	static final int    CAMERA_REQUEST_CODE     = 0x101;
+    private final static String     TAG                     = MainActivity.class.getSimpleName();
+    private static final int        RC_BARCODE_CAPTURE      = 9001;
+    public 	static final int        CAMERA_REQUEST_CODE     = 0x101;
 
+    private String                  lastQueryString         = "harry Potter";
     private GoogleBooksAPI          googleBooksAPI;
     private BooksListFragment       booksListFragment;
     private SharedPreferences       mPreferences;
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
     private ProgressBar             mProgress;
     private Toolbar                 mToolbar;
     private FloatingActionButton    mFab;
-    private String                  lastQueryString = "harry Potter";
 
     //region Overridden Methods
     @Override
@@ -107,20 +107,6 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onListFragmentInteraction(Book item) {
 
         Gson    gson                    = new Gson();
@@ -150,8 +136,18 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                 Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                 if (barcode.displayValue.matches(AppConstants.ISBN_REGEX)) {
 
-                    String code = barcode.displayValue;
-                    searchBooks("+isbn:"+code);
+                    String code = AppConstants.ISBN_SEARCH_STRING + barcode.displayValue;
+                    searchBookByIsbn(code);
+
+                } else {
+
+                    Snackbar.make(MainActivity.this.mFab, "The scanned BarCode is not an ISBN code", Snackbar.LENGTH_LONG)
+                            .setAction("close", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    //keeping the method empty let the button dismiss the snackbar
+                                }
+                            }).show();
 
                 }
 
@@ -215,6 +211,47 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
                 Log.e(TAG, t.getMessage(), t);
                 booksListFragment.updateBooksList(null, true);
+
+            }
+
+        });
+
+    }
+
+    public void searchBookByIsbn(final String queryString) {
+
+        mProgress.setVisibility(View.VISIBLE);
+
+        googleBooksAPI.bookSearch(queryString, getString(R.string.apiKey)).enqueue(new Callback<BookQueryResult>() {
+            @Override
+            public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
+
+                mProgress.setVisibility(View.GONE);
+
+                if(response.body() != null && response.body().getItems() != null) {
+
+                    Book    item                    = response.body().getItems().get(0);
+                    Gson    gson                    = new Gson();
+                    Intent  detailActivityIntent    = new Intent(MainActivity.this, DetailActivity.class);
+                    detailActivityIntent.putExtra(AppConstants.BOOK_DETAIL, gson.toJson(item, Book.class));
+                    startActivity(detailActivityIntent);
+
+                } else {
+
+                    Snackbar.make(MainActivity.this.mFab, "The Book you've searched has not been found", Snackbar.LENGTH_LONG)
+                            .setAction("close", null).show();
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BookQueryResult> call, @NonNull Throwable t) {
+
+                mProgress.setVisibility(View.GONE);
+                Log.e(TAG, t.getMessage(), t);
+                Snackbar.make(MainActivity.this.mFab, "The Book you've searched has not been found", Snackbar.LENGTH_LONG)
+                        .setAction("close", null).show();
 
             }
 
@@ -289,9 +326,8 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                 else
                     startBarcodeActivity(MainActivity.this);
 
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
             }
+
         });
 
         this.mProgress = findViewById(R.id.progress);

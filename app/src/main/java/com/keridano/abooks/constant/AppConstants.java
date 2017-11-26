@@ -6,9 +6,10 @@ package com.keridano.abooks.constant;
 
 public class AppConstants {
 
-    public final static String IS_FIRST_START   = "isFirstStart";
-    public static final String BOOK_DETAIL      = "bookDetail";
-    public static final String ISBN_REGEX       = "^(97(8|9))?\\d{9}(\\d|X)$";
+    public final static String IS_FIRST_START       = "isFirstStart";
+    public static final String BOOK_DETAIL          = "bookDetail";
+    public static final String ISBN_REGEX           = "^(97(8|9))?\\d{9}(\\d|X)$";
+    public static final String ISBN_SEARCH_STRING   = "+isbn:";
 
 
 }

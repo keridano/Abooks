@@ -43,10 +43,15 @@ public class DetailActivity extends AppCompatActivity {
         this.mTitle         = findViewById(R.id.title);
         this.mDescription   = findViewById(R.id.description);
 
-        Picasso.with(this)
-                .load(this.mBook.getVolumeInfo().getImageLinks().getThumbnail())
-                .placeholder(R.mipmap.ic_launcher)
-                .into(this.mCoverImage);
+        if (this.mBook.getVolumeInfo().getImageLinks() != null && this.mBook.getVolumeInfo().getImageLinks().getThumbnail() != null) {
+
+            Picasso.with(this)
+                    .load(this.mBook.getVolumeInfo().getImageLinks().getThumbnail())
+                    .placeholder(R.mipmap.ic_launcher)
+                    .into(this.mCoverImage);
+
+        } else
+            this.mCoverImage.setImageResource(R.drawable.book_placeholder);
 
         this.mDate.setText(this.mBook.getVolumeInfo().getPublishedDate());
         this.mTitle.setText(this.mBook.getVolumeInfo().getTitle());

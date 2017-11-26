@@ -68,7 +68,7 @@ public class BooksRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
             if (viewHolder.mItem.getVolumeInfo() != null) {
 
                 viewHolder.mBookTitle.setText(viewHolder.mItem.getVolumeInfo().getTitle());
-                if (viewHolder.mItem.getVolumeInfo().getImageLinks() != null) {
+                if (viewHolder.mItem.getVolumeInfo().getImageLinks() != null && viewHolder.mItem.getVolumeInfo().getImageLinks().getThumbnail() != null) {
 
                     Picasso.with(mContext)
                             .load(viewHolder.mItem.getVolumeInfo().getImageLinks().getThumbnail())
