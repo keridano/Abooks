@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package barcodereader;
+package com.keridano.abooks.barcodereader;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -41,9 +41,9 @@ import com.keridano.abooks.R;
 
 import java.io.IOException;
 
-import barcodereader.ui.camera.CameraSource;
-import barcodereader.ui.camera.CameraSourcePreview;
-import barcodereader.ui.camera.GraphicOverlay;
+import com.keridano.abooks.barcodereader.ui.camera.CameraSource;
+import com.keridano.abooks.barcodereader.ui.camera.CameraSourcePreview;
+import com.keridano.abooks.barcodereader.ui.camera.GraphicOverlay;
 
 /**
  * Activity for the multi-tracker app.  This app detects barcodes and displays the value with the

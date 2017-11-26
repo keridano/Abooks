@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package barcodereader;
+package com.keridano.abooks.barcodereader;
 
 import android.content.Context;
 
@@ -21,7 +21,7 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;
 
-import barcodereader.ui.camera.GraphicOverlay;
+import com.keridano.abooks.barcodereader.ui.camera.GraphicOverlay;
 
 /**
  * Factory for creating a tracker and associated graphic to be associated with a new barcode.  The

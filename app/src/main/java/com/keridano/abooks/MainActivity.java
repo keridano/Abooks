@@ -35,7 +35,7 @@ import com.keridano.abooks.model.BookQueryResult;
 
 import java.util.concurrent.TimeUnit;
 
-import barcodereader.BarcodeCaptureActivity;
+import com.keridano.abooks.barcodereader.BarcodeCaptureActivity;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
     private static final int        RC_BARCODE_CAPTURE      = 9001;
     public 	static final int        CAMERA_REQUEST_CODE     = 0x101;
 
-    private String                  lastQueryString         = "harry Potter";
+    private String                  lastQueryString         = "Harry Potter"; //this is only the first search, the user can change it
     private GoogleBooksAPI          googleBooksAPI;
     private BooksListFragment       booksListFragment;
     private SharedPreferences       mPreferences;
@@ -141,8 +141,8 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
                 } else {
 
-                    Snackbar.make(MainActivity.this.mFab, "The scanned BarCode is not an ISBN code", Snackbar.LENGTH_LONG)
-                            .setAction("close", new View.OnClickListener() {
+                    Snackbar.make(MainActivity.this.mFab, getString(R.string.isbn_error), Snackbar.LENGTH_LONG)
+                            .setAction(getString(android.R.string.ok), new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     //keeping the method empty let the button dismiss the snackbar
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
         mProgress.setVisibility(View.VISIBLE);
 
-        googleBooksAPI.bookSearch(queryString, getString(R.string.apiKey)).enqueue(new Callback<BookQueryResult>() {
+        googleBooksAPI.bookSearch(queryString, getString(R.string.api_key)).enqueue(new Callback<BookQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
         String startIndex = page > 0 ? Integer.valueOf((page*10)-1).toString() : "0";
 
-        googleBooksAPI.bookSearch(lastQueryString, getString(R.string.apiKey), startIndex).enqueue(new Callback<BookQueryResult>() {
+        googleBooksAPI.bookSearch(lastQueryString, getString(R.string.api_key), startIndex).enqueue(new Callback<BookQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
         mProgress.setVisibility(View.VISIBLE);
 
-        googleBooksAPI.bookSearch(queryString, getString(R.string.apiKey)).enqueue(new Callback<BookQueryResult>() {
+        googleBooksAPI.bookSearch(queryString, getString(R.string.api_key)).enqueue(new Callback<BookQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<BookQueryResult> call, @NonNull Response<BookQueryResult> response) {
 
@@ -238,8 +238,8 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
                 } else {
 
-                    Snackbar.make(MainActivity.this.mFab, "The Book you've searched has not been found", Snackbar.LENGTH_LONG)
-                            .setAction("close", null).show();
+                    Snackbar.make(MainActivity.this.mFab, getString(R.string.book_not_found), Snackbar.LENGTH_LONG)
+                            .setAction(getString(android.R.string.ok), null).show();
 
                 }
 
@@ -250,8 +250,8 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
 
                 mProgress.setVisibility(View.GONE);
                 Log.e(TAG, t.getMessage(), t);
-                Snackbar.make(MainActivity.this.mFab, "The Book you've searched has not been found", Snackbar.LENGTH_LONG)
-                        .setAction("close", null).show();
+                Snackbar.make(MainActivity.this.mFab, getString(R.string.book_not_found), Snackbar.LENGTH_LONG)
+                        .setAction(getString(android.R.string.ok), null).show();
 
             }
 
@@ -265,17 +265,17 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
         if(isFirstStart && this.booksListFragment.getView() != null) {
 
             new TapTargetSequence(this).targets(
-                    TapTarget.forToolbarMenuItem(this.mToolbar, R.id.action_search, "Search your favourite books", "Tap on the search button to search for books title, auhors, publisher and much more")
+                    TapTarget.forToolbarMenuItem(this.mToolbar, R.id.action_search, getString(R.string.tutorial_title_1), getString(R.string.tutorial_desc_1))
                             .drawShadow(true)
                             .tintTarget(true)
                             .cancelable(false)
                             .icon(getDrawable(R.drawable.ic_search)),
-                    TapTarget.forView(this.mFab, "This is the barcode scanner", "tap on it to scan an ISBN code and search for a book")
+                    TapTarget.forView(this.mFab, getString(R.string.tutorial_title_2), getString(R.string.tutorial_desc_2))
                             .drawShadow(true)
                             .tintTarget(true)
                             .cancelable(false)
                             .icon(getDrawable(R.drawable.ic_barcode_scan)),
-                    TapTarget.forView(this.booksListFragment.getView(), "This is the book shelf", "Tap on a book to get the details")
+                    TapTarget.forView(this.booksListFragment.getView(), getString(R.string.tutorial_title_3), getString(R.string.tutorial_desc_3))
                             .drawShadow(true)
                             .tintTarget(true)
                             .cancelable(false)
@@ -299,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                            public void onSequenceCanceled(TapTarget lastTarget) {
 
                            }
+
                        }
 
             ).start();
@@ -345,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements BooksListFragment
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://www.googleapis.com")
+                .baseUrl(getString(R.string.api_name))
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
